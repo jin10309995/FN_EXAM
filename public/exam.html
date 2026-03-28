@@ -7,9 +7,26 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script>MathJax = { tex: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] } };</script>
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
-<style>body{font-family:'Noto Sans TC',sans-serif;}</style>
+<style>
+html{overflow-y:scroll;}
+body{font-family:'Noto Sans TC',sans-serif;}
+.top-nav-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height:36px;
+  line-height:1;
+  box-sizing:border-box;
+  white-space:nowrap;
+}
+.tab-btn{transition:all .2s;}
+.tab-btn.active{background:#4338ca;color:#fff;}
+
+/* Bookmark dot on nav buttons */
+.nav-bookmark-dot{position:absolute;top:-3px;right:-3px;width:7px;height:7px;background:#f59e0b;border-radius:50%;border:1.5px solid white;pointer-events:none;}
+</style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-100 min-h-screen">
 
 <!-- Registration Modal -->
 <div id="reg-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -24,31 +41,45 @@
         <label class="block text-sm font-medium text-gray-700 mb-1">座號 / 學號</label>
         <input id="student-id" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="選填">
       </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">試卷存取碼</label>
+        <input id="access-code" type="password" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="若試卷有設定請輸入">
+      </div>
+      <div id="resume-hint" class="hidden text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2"></div>
     </div>
     <button onclick="startExam()" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-medium text-lg transition-colors">開始考試</button>
   </div>
 </div>
 
 <!-- Exam Header -->
-<header class="bg-indigo-700 text-white py-3 px-6 shadow sticky top-0 z-40">
-  <div class="max-w-4xl mx-auto flex justify-between items-center">
-    <div>
-      <span class="font-bold" id="exam-title">載入中...</span>
-      <span class="text-indigo-200 text-sm ml-3" id="progress-text"></span>
+<header class="bg-indigo-700 text-white py-4 px-6 shadow sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto flex flex-col gap-3">
+    <div class="flex items-center gap-4 flex-wrap">
+      <button onclick="goHome('/exam-list.html')" class="top-nav-btn text-white hover:text-white bg-white/10 hover:bg-white/20 border border-white/30 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors">🎓 學生首頁</button>
+      <div class="flex gap-2 flex-wrap items-center">
+        <button onclick="goHome('/exam-list.html')" class="tab-btn top-nav-btn px-4 py-1.5 rounded-lg text-sm font-medium border border-white/30 text-indigo-200 hover:text-white hover:bg-white/10">📝 選擇考題</button>
+        <button onclick="goHome('/results.html')" class="tab-btn top-nav-btn px-4 py-1.5 rounded-lg text-sm font-medium border border-white/30 text-indigo-200 hover:text-white hover:bg-white/10">📊 成績查詢</button>
+        <span class="tab-btn top-nav-btn active px-4 py-1.5 rounded-lg text-sm font-medium border border-white/30">📝 作答中</span>
+      </div>
+      <div class="ml-auto flex items-center gap-3">
+        <div id="timer" class="bg-indigo-800 px-4 py-1.5 rounded-lg font-mono text-base font-bold">--:--</div>
+        <button onclick="confirmSubmit()" class="bg-green-600 hover:bg-green-700 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors">提交作答</button>
+        <button onclick="logoutStudent()" class="top-nav-btn px-4 py-1.5 rounded-lg text-sm font-medium border border-white/30 text-indigo-200 hover:text-white hover:bg-white/10 transition-colors">登出</button>
+      </div>
     </div>
-    <div class="flex items-center gap-4">
-      <div id="timer" class="bg-indigo-800 px-4 py-1 rounded-full font-mono text-lg font-bold">--:--</div>
-      <button onclick="confirmSubmit()" class="bg-green-500 hover:bg-green-600 px-4 py-1 rounded-lg font-medium transition-colors">提交作答</button>
+    <div class="text-sm text-indigo-100">
+      <span class="font-semibold text-white" id="exam-title">載入中...</span>
+      <span class="text-indigo-200 ml-3" id="progress-text"></span>
     </div>
   </div>
 </header>
 
-<main class="max-w-4xl mx-auto px-4 py-6" id="questions-container">
+<main class="max-w-7xl mx-auto px-4 py-6" id="questions-container">
   <div class="text-center py-16 text-gray-500">載入中...</div>
 </main>
 
 <div class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-3 z-30">
-  <div class="max-w-4xl mx-auto flex flex-col items-center gap-2" id="question-nav"></div>
+  <div class="max-w-7xl mx-auto flex flex-col items-center gap-2" id="question-nav"></div>
 </div>
 
 <script>
@@ -60,23 +91,141 @@ let timerInterval = null;
 let timeLeft = 0;
 let studentName = '';
 let studentId = '';
+let accessCode = '';
 let currentQuestionIndex = 0;
+let currentSubmissionId = null;
+let currentLookupToken = '';
+let examStartedAt = null;
+let autoSaveTimer = null;
+let saveInFlight = false;
+let bookmarks = {};
+let showOnlyBookmarks = false;
+const RECENT_LOOKUP_KEY = 'recent_lookup_records_v1';
+const RECENT_LOOKUP_LIMIT = 20;
+const studentLoginUrl = '/login.html?role=student&return_to=' + encodeURIComponent(location.pathname + location.search);
+
+function redirectToStudentLogin() {
+  location.replace(studentLoginUrl);
+}
+
+function readRecentLookups() {
+  try {
+    const raw = localStorage.getItem(RECENT_LOOKUP_KEY);
+    const list = JSON.parse(raw || '[]');
+    if (!Array.isArray(list)) return [];
+    return list.filter(item => item && item.lookup_token && item.submission_id);
+  } catch (_) {
+    return [];
+  }
+}
+
+function writeRecentLookups(list) {
+  try {
+    localStorage.setItem(RECENT_LOOKUP_KEY, JSON.stringify(list.slice(0, RECENT_LOOKUP_LIMIT)));
+  } catch (_) {}
+}
+
+function rememberLookupRecord(record) {
+  if (!record || !record.lookup_token || !record.submission_id) return;
+  const normalized = {
+    submission_id: Number(record.submission_id),
+    exam_id: Number(record.exam_id || 0) || null,
+    lookup_token: String(record.lookup_token),
+    exam_title: String(record.exam_title || ''),
+    submitted_at: String(record.submitted_at || ''),
+    student_name: String(record.student_name || ''),
+    saved_at: new Date().toISOString()
+  };
+  const current = readRecentLookups();
+  const merged = [normalized, ...current.filter(item =>
+    !(Number(item.submission_id) === normalized.submission_id && String(item.lookup_token) === normalized.lookup_token)
+  )];
+  writeRecentLookups(merged);
+}
+
+async function ensureStudentSession() {
+  try {
+    const res = await fetch('/api/student/me', { credentials: 'same-origin' });
+    if (!res.ok) {
+      redirectToStudentLogin();
+      return null;
+    }
+    const data = await res.json();
+    return data.student || null;
+  } catch (_) {
+    redirectToStudentLogin();
+    return null;
+  }
+}
 
 async function loadExam() {
-  const res = await fetch(`/api/exams/${examId}/take`);
-  if (!res.ok) { document.getElementById('questions-container').innerHTML = '<p class="text-center py-16 text-red-500">試卷不存在或尚未開放</p>'; document.getElementById('reg-modal').remove(); return; }
+  const query = accessCode ? `?access_code=${encodeURIComponent(accessCode)}` : '';
+  const res = await fetch(`/api/public/exams/${examId}/take${query}`);
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const msg = data.error || '試卷不存在或尚未開放';
+    document.getElementById('questions-container').innerHTML = `<p class="text-center py-16 text-red-500">${escHtml(msg)}</p>`;
+    if (!data.requires_access_code) document.getElementById('reg-modal').remove();
+    return;
+  }
   examData = await res.json();
   document.getElementById('exam-title').textContent = examData.title;
   timeLeft = examData.duration_min * 60;
 }
 
-function startExam() {
+async function startExam() {
   studentName = document.getElementById('student-name').value.trim();
   if (!studentName) { alert('請填寫姓名'); return; }
   studentId = document.getElementById('student-id').value.trim();
+  accessCode = document.getElementById('access-code').value.trim();
+  const res = await fetch(`/api/public/exams/${examId}/session`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      student_name: studentName,
+      student_id: studentId,
+      access_code: accessCode
+    })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    alert(data.error || '無法開始考試');
+    return;
+  }
+  const takeRes = await fetch(`/api/public/exams/${examId}/take?access_code=${encodeURIComponent(accessCode || '')}`);
+  const takeData = await takeRes.json().catch(() => ({}));
+  if (!takeRes.ok) {
+    alert(takeData.error || '無法載入試卷內容');
+    return;
+  }
+  examData = takeData;
+  document.getElementById('exam-title').textContent = examData.title;
+  timeLeft = examData.duration_min * 60;
+  currentSubmissionId = data.submission_id;
+  currentLookupToken = data.lookup_token;
+  examStartedAt = data.started_at || new Date().toISOString();
+  answers = data.answers || {};
+  rememberLookupRecord({
+    submission_id: currentSubmissionId,
+    exam_id: parseInt(examId, 10) || null,
+    lookup_token: currentLookupToken,
+    exam_title: examData?.title || '',
+    submitted_at: data.status === 'submitted' ? new Date().toISOString() : '',
+    student_name: studentName
+  });
+  if (data.resumed) {
+    const hint = document.getElementById('resume-hint');
+    hint.textContent = '已接續先前未完成的作答紀錄，系統會保留你先前的答案。';
+    hint.classList.remove('hidden');
+  }
+  if (examData?.duration_min && examStartedAt) {
+    const elapsed = Math.max(0, Math.floor((Date.now() - new Date(examStartedAt).getTime()) / 1000));
+    timeLeft = Math.max(0, examData.duration_min * 60 - elapsed);
+  }
   document.getElementById('reg-modal').remove();
   goToQuestion(0);
   startTimer();
+  startAutoSave();
 }
 
 const audioPlayCounts = {};
@@ -105,7 +254,10 @@ function renderCurrentQuestion(idx) {
   container.innerHTML = `${passageBlock}<div id="q-${idx}" class="bg-white rounded-xl shadow p-6">
     <div class="flex justify-between items-start mb-3">
       <span class="text-sm font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">第 ${idx+1} 題 · ${q.subject_name} · ${q.score}分${typeTag}</span>
-      <span class="text-xs text-gray-400">${'★'.repeat(q.difficulty || 1)}${'☆'.repeat(5-(q.difficulty||1))}</span>
+      <div class="flex items-center gap-2">
+        <button onclick="toggleBookmark(${idx})" title="${bookmarks[q.id] ? '移除書籤' : '加入書籤'}" style="font-size:1.25rem;line-height:1;background:none;border:none;cursor:pointer;padding:2px;opacity:${bookmarks[q.id] ? '1' : '0.25'};transition:opacity .15s">🔖</button>
+        <span class="text-xs text-gray-400">${'★'.repeat(q.difficulty || 1)}${'☆'.repeat(5-(q.difficulty||1))}</span>
+      </div>
     </div>
     ${q.audio_transcript ? renderTTSPlayer(q, idx) : ''}
     ${imageBlock}
@@ -151,6 +303,8 @@ function updateNavBar() {
 
   const navBtns = examData.questions.map((q, i) => {
     const qid = q.id;
+    const isBookmarkedQ = !!bookmarks[qid];
+    if (showOnlyBookmarks && !isBookmarkedQ) return '';
     let cls = 'w-8 h-8 rounded text-xs font-medium border-2 ';
     if (i === currentQuestionIndex) {
       cls += 'border-indigo-600 bg-indigo-600 text-white';
@@ -161,11 +315,18 @@ function updateNavBar() {
     } else {
       cls += 'border-gray-300 text-gray-600 hover:border-indigo-400';
     }
-    return `<button id="nav-${i}" onclick="goToQuestion(${i})" class="${cls}">${i+1}</button>`;
+    const dot = isBookmarkedQ ? `<span class="nav-bookmark-dot"></span>` : '';
+    return `<button id="nav-${i}" onclick="goToQuestion(${i})" class="${cls}" style="position:relative">${i+1}${dot}</button>`;
   }).join('');
+
+  const bookmarkCount = examData.questions.filter(q => bookmarks[q.id]).length;
+  const filterBtn = bookmarkCount > 0
+    ? `<button onclick="toggleBookmarkFilter()" class="text-xs px-3 py-1.5 rounded-lg border transition-colors ${showOnlyBookmarks ? 'bg-yellow-400 border-yellow-500 text-white' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}">🔖 ${showOnlyBookmarks ? '顯示全部' : '顯示書籤'} (${bookmarkCount})</button>`
+    : '';
 
   nav.innerHTML = `
     <div class="flex gap-1 flex-wrap justify-center">${navBtns}</div>
+    ${filterBtn ? `<div class="flex justify-center">${filterBtn}</div>` : ''}
     <div class="flex items-center justify-between w-full max-w-sm gap-4">
       <button onclick="goToQuestion(${currentQuestionIndex - 1})" ${isFirst ? 'disabled' : ''}
         class="flex-1 px-5 py-2 rounded-lg border-2 border-gray-300 text-gray-700 text-base font-semibold ${isFirst ? 'opacity-30 cursor-not-allowed' : 'hover:border-indigo-400 hover:text-indigo-600'}">
@@ -301,9 +462,13 @@ function renderFill(q, idx) {
     class="w-full border-2 border-gray-300 focus:border-indigo-500 rounded-lg px-3 py-2 outline-none transition-colors">` + renderDontKnow(idx);
 }
 
+function getClozeBlankCount(q) {
+  const n = parseInt(q?.blank_count, 10);
+  return Number.isInteger(n) && n > 0 ? n : 1;
+}
+
 function renderCloze(q, idx) {
-  // Split answer by | to count blanks, render matching number of inputs
-  const blanks = (q.answer || '').split('|').length;
+  const blanks = getClozeBlankCount(q);
   const inputs = Array.from({length: blanks}, (_, b) =>
     `<div class="flex items-center gap-2 mb-2">
       <span class="text-sm text-gray-500 min-w-12">空格 ${b+1}：</span>
@@ -317,7 +482,7 @@ function renderCloze(q, idx) {
 
 function setClozeAnswer(idx) {
   const q = examData.questions[idx];
-  const blanks = (q.answer || '').split('|').length;
+  const blanks = getClozeBlankCount(q);
   const parts = Array.from({length: blanks}, (_, b) => {
     const el = document.getElementById(`cloze-${idx}-${b}`);
     return el ? el.value.trim() : '';
@@ -378,7 +543,7 @@ function toggleDontKnow(idx) {
     if (q.type === 'choice' || q.type === 'reading' || q.type === 'true_false') {
       document.querySelectorAll(`input[name="q-${idx}"]`).forEach(r => r.checked = false);
     } else if (q.type === 'cloze') {
-      const blanks = (q.answer || '').split('|').length;
+      const blanks = getClozeBlankCount(q);
       for (let b = 0; b < blanks; b++) {
         const el = document.getElementById(`cloze-${idx}-${b}`);
         if (el) el.value = '';
@@ -421,17 +586,27 @@ async function startRecording(idx) {
     mr.onstop = async () => {
       stream.getTracks().forEach(t => t.stop());
       const blob = new Blob(chunks, { type: 'audio/webm' });
+      const statusEl = document.getElementById(`rec-status-${idx}`);
+      if (!currentSubmissionId || !currentLookupToken) {
+        statusEl.textContent = '上傳失敗：作答 session 無效，請重新進入試卷';
+        return;
+      }
       const fd = new FormData();
       fd.append('audio', blob, `speaking_${idx}.webm`);
-      document.getElementById(`rec-status-${idx}`).textContent = '上傳中…';
+      fd.append('submission_id', String(currentSubmissionId));
+      fd.append('lookup_token', String(currentLookupToken));
+      statusEl.textContent = '上傳中…';
       try {
-        const r = await fetch('/api/audio/upload', { method: 'POST', body: fd });
-        const j = await r.json();
-        if (j.audio_url) {
+        const r = await fetch('/api/public/audio/upload', { method: 'POST', credentials: 'same-origin', body: fd });
+        const j = await r.json().catch(() => ({}));
+        if (r.ok && j.audio_url) {
           setAnswer(idx, '__speaking_audio__:' + j.audio_url);
-          document.getElementById(`rec-status-${idx}`).innerHTML = `✅ 錄音上傳成功：<a href="${j.audio_url}" target="_blank" class="text-blue-500 underline">聆聽</a>`;
-        } else { document.getElementById(`rec-status-${idx}`).textContent = '上傳失敗：' + (j.error||'未知'); }
-      } catch(e) { document.getElementById(`rec-status-${idx}`).textContent = '上傳失敗：' + e.message; }
+          statusEl.innerHTML = `✅ 錄音上傳成功：<a href="${j.audio_url}" target="_blank" class="text-blue-500 underline">聆聽</a>`;
+        } else {
+          statusEl.textContent = '上傳失敗：' + (j.error || `HTTP ${r.status}`);
+          if (r.status === 401) setTimeout(redirectToStudentLogin, 500);
+        }
+      } catch(e) { statusEl.textContent = '上傳失敗：' + e.message; }
     };
     recorders[idx] = mr;
     mr.start();
@@ -455,13 +630,48 @@ function updateProgress() {
   document.getElementById('progress-text').textContent = `已作答 ${answered}/${examData.questions.length} 題`;
 }
 
+function startAutoSave() {
+  if (autoSaveTimer) clearInterval(autoSaveTimer);
+  autoSaveTimer = setInterval(() => {
+    saveProgress(false);
+  }, 15000);
+}
+
+async function saveProgress(force = false) {
+  if (!currentSubmissionId || !currentLookupToken || saveInFlight) return true;
+  if (!force && !Object.keys(answers).length) return true;
+  saveInFlight = true;
+  try {
+    const res = await fetch(`/api/public/submissions/${currentSubmissionId}/progress`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lookup_token: currentLookupToken,
+        answers
+      })
+    });
+    if (!res.ok && force) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || '儲存作答進度失敗');
+      return false;
+    }
+    return res.ok;
+  } finally {
+    saveInFlight = false;
+  }
+}
+
 function startTimer() {
-  timerInterval = setInterval(() => {
-    timeLeft--;
+  const el = document.getElementById('timer');
+  const render = () => {
     const m = Math.floor(timeLeft / 60).toString().padStart(2,'0');
     const s = (timeLeft % 60).toString().padStart(2,'0');
-    const el = document.getElementById('timer');
     el.textContent = `${m}:${s}`;
+  };
+  render();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    render();
     if (timeLeft <= 300) el.classList.add('text-yellow-300');
     if (timeLeft <= 60)  el.classList.replace('text-yellow-300','text-red-300');
     if (timeLeft <= 0)   { clearInterval(timerInterval); submitAnswers(); }
@@ -472,23 +682,118 @@ function confirmSubmit() {
   if (confirm('確定要提交作答嗎？')) submitAnswers();
 }
 
+function goHome(url) {
+  const hasProgress = currentSubmissionId && Object.keys(answers).length > 0;
+  if (hasProgress && !confirm('目前作答進度可能尚未提交，確定要離開並返回首頁嗎？')) return;
+  location.href = url;
+}
+
+async function logoutStudent() {
+  const hasProgress = currentSubmissionId && Object.keys(answers).length > 0;
+  if (hasProgress && !confirm('目前作答進度可能尚未提交，確定要登出並離開嗎？')) return;
+  try {
+    await fetch('/api/student/logout', { method: 'POST', credentials: 'same-origin' });
+  } catch (_) {}
+  location.replace('/login.html?role=student');
+}
+
 async function submitAnswers() {
   clearInterval(timerInterval);
+  if (autoSaveTimer) clearInterval(autoSaveTimer);
+  const saved = await saveProgress(true);
+  if (!saved) return;
+
+  // Reverse-map shuffled option letters back to original letters before submitting
+  const submittedAnswers = {};
+  for (const q of (examData?.questions || [])) {
+    const given = answers[q.id];
+    if (given == null) continue;
+    if (q._option_remap && typeof given === 'string' && given.length === 1 && given >= 'A' && given <= 'D') {
+      submittedAnswers[q.id] = q._option_remap[given] || given;
+    } else {
+      submittedAnswers[q.id] = given;
+    }
+  }
+
   const res = await fetch(`/api/exams/${examId}/submit`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ student_name: studentName, student_id: studentId, answers })
+    body: JSON.stringify({
+      student_name: studentName,
+      student_id: studentId,
+      answers: submittedAnswers,
+      access_code: accessCode,
+      submission_id: currentSubmissionId,
+      lookup_token: currentLookupToken
+    })
   });
   const data = await res.json();
   if (data.submission_id) {
-    location.href = `/result.html?id=${data.submission_id}`;
+    rememberLookupRecord({
+      submission_id: data.submission_id,
+      exam_id: parseInt(examId, 10) || null,
+      lookup_token: data.lookup_token,
+      exam_title: examData?.title || '',
+      submitted_at: new Date().toISOString(),
+      student_name: studentName
+    });
+    location.href = `/result.html?id=${data.submission_id}&token=${encodeURIComponent(data.lookup_token)}`;
   } else {
     alert('提交失敗：' + (data.error || '未知錯誤'));
   }
 }
 
 function escHtml(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-loadExam();
+
+// ── Bookmarks ─────────────────────────────────────────────────────────────
+function loadBookmarks() {
+  try { bookmarks = JSON.parse(localStorage.getItem(`exam_bookmarks_${examId}`) || '{}'); }
+  catch(_) { bookmarks = {}; }
+}
+function saveBookmarks() {
+  try { localStorage.setItem(`exam_bookmarks_${examId}`, JSON.stringify(bookmarks)); }
+  catch(_) {}
+}
+function toggleBookmark(idx) {
+  if (!examData) return;
+  const qid = examData.questions[idx].id;
+  if (bookmarks[qid]) { delete bookmarks[qid]; } else { bookmarks[qid] = true; }
+  saveBookmarks();
+  renderCurrentQuestion(idx);
+}
+function toggleBookmarkFilter() {
+  showOnlyBookmarks = !showOnlyBookmarks;
+  updateNavBar();
+}
+
+loadBookmarks();
+initPage();
+window.addEventListener('beforeunload', () => {
+  if (currentSubmissionId && currentLookupToken && Object.keys(answers).length) {
+    navigator.sendBeacon?.(
+      `/api/public/submissions/${currentSubmissionId}/progress`,
+      new Blob([JSON.stringify({ lookup_token: currentLookupToken, answers })], { type: 'application/json' })
+    );
+  }
+});
+
+window.addEventListener('pageshow', () => {
+  ensureStudentSession();
+});
+
+async function initPage() {
+  const student = await ensureStudentSession();
+  if (!student) return;
+  const nameInput = document.getElementById('student-name');
+  const idInput = document.getElementById('student-id');
+  if (student.name && nameInput && !nameInput.value.trim()) nameInput.value = student.name;
+  if (student.student_id && idInput && !idInput.value.trim()) idInput.value = student.student_id;
+  loadExam();
+}
 </script>
 </body>
 </html>
+
+
+
+

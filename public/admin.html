@@ -3,10 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>後台管理 - 數理資優班考題系統</title>
+<title>老師首頁 - 數理資優班考題系統</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
+html{overflow-y:scroll;}
 body{font-family:'Noto Sans TC',sans-serif;}
+.top-nav-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height:36px;
+  line-height:1;
+  box-sizing:border-box;
+  white-space:nowrap;
+}
 .tab-btn.active{background:#4338ca;color:#fff;}
 .tab-btn{transition:all .2s;}
 </style>
@@ -14,17 +24,40 @@ body{font-family:'Noto Sans TC',sans-serif;}
 <body class="bg-gray-100 min-h-screen">
 <header class="bg-indigo-700 text-white py-4 px-6 shadow sticky top-0 z-50">
   <div class="max-w-7xl mx-auto flex items-center gap-4">
-    <a href="/" class="flex items-center gap-1 text-indigo-200 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">🏠 首頁</a>
-    <span class="text-lg font-bold">後台管理</span>
-    <div class="ml-auto flex gap-2">
-      <button class="tab-btn active px-4 py-1.5 rounded-lg text-sm font-medium border border-white/30" onclick="switchTab('questions',this)">題庫管理</button>
-      <button class="tab-btn px-4 py-1.5 rounded-lg text-sm font-medium border border-white/30 text-indigo-200" onclick="switchTab('exams',this)">試卷管理</button>
-      <button class="tab-btn px-4 py-1.5 rounded-lg text-sm font-medium border border-white/30 text-indigo-200" onclick="switchTab('stats',this)">成績統計</button>
-      <button class="tab-btn px-4 py-1.5 rounded-lg text-sm font-medium border border-white/30 text-indigo-200" onclick="switchTab('ml',this)">🧠 ML 分析</button>
-      <button class="tab-btn px-4 py-1.5 rounded-lg text-sm font-medium border border-white/30 text-indigo-200" onclick="switchTab('grading',this)">✍️ 作文批改</button>
+    <a href="/admin.html" class="top-nav-btn text-white hover:text-white bg-white/10 hover:bg-white/20 border border-white/30 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors">👨‍🏫 老師首頁</a>
+    <div class="flex gap-2 flex-wrap items-center">
+      <button class="tab-btn top-nav-btn active px-4 py-1.5 rounded-lg text-sm font-medium border border-white/30" onclick="switchTab('questions',this)">📚 題庫管理</button>
+      <button class="tab-btn top-nav-btn px-4 py-1.5 rounded-lg text-sm font-medium border border-white/30 text-indigo-200" onclick="switchTab('exams',this)">📝 試卷管理</button>
+      <a href="/ai-generate.html" class="top-nav-btn px-4 py-1.5 rounded-lg text-sm font-medium border border-white/30 text-indigo-200 hover:text-white hover:bg-white/10 transition-colors">🤖 AI 出題</a>
+      <button class="tab-btn top-nav-btn px-4 py-1.5 rounded-lg text-sm font-medium border border-white/30 text-indigo-200" onclick="switchTab('accounts',this)">👥 帳號管理</button>
+      <button class="tab-btn top-nav-btn px-4 py-1.5 rounded-lg text-sm font-medium border border-white/30 text-indigo-200" onclick="switchTab('stats',this)">📊 成績統計</button>
+      <button class="tab-btn top-nav-btn px-4 py-1.5 rounded-lg text-sm font-medium border border-white/30 text-indigo-200" onclick="switchTab('review',this)">🛡️ 審查工作台</button>
+      <button class="tab-btn top-nav-btn px-4 py-1.5 rounded-lg text-sm font-medium border border-white/30 text-indigo-200" onclick="switchTab('ml',this)">🧠 ML 分析</button>
+      <button class="tab-btn top-nav-btn px-4 py-1.5 rounded-lg text-sm font-medium border border-white/30 text-indigo-200" onclick="switchTab('grading',this)">✍️ 作文批改</button>
+    </div>
+    <div class="ml-auto flex items-center gap-2">
+      <div id="admin-user-badge" class="text-sm text-indigo-100 bg-white/10 px-3 py-1 rounded-lg hidden"></div>
+      <button class="top-nav-btn px-4 py-1.5 rounded-lg text-sm font-medium border border-white/30 text-indigo-200 hover:text-white hover:bg-white/10 transition-colors" onclick="logoutAdmin()">登出</button>
     </div>
   </div>
 </header>
+
+<div class="max-w-7xl mx-auto px-4 pt-4">
+  <div id="admin-access-notice" class="rounded-2xl border border-sky-200 bg-sky-50 px-5 py-4 shadow-sm">
+    <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-start gap-3">
+        <span id="admin-access-icon" class="text-xl mt-0.5">📚</span>
+        <div>
+          <p id="admin-access-title" class="text-sm font-bold text-sky-800">題庫管理注意事項</p>
+          <p id="admin-access-text" class="text-sm text-sky-700">新增或編輯題目後請記得按儲存；批次調整前建議先以篩選條件確認學段、科目與題型。</p>
+        </div>
+      </div>
+      <div id="admin-access-pill" class="inline-flex items-center justify-center rounded-full bg-sky-100 px-3 py-1 text-xs font-medium text-sky-800 ring-1 ring-sky-200">
+        題庫管理
+      </div>
+    </div>
+  </div>
+</div>
 
 <main class="max-w-7xl mx-auto px-4 py-6">
   <!-- 題庫管理 -->
@@ -81,6 +114,47 @@ body{font-family:'Noto Sans TC',sans-serif;}
     </div>
   </div>
 
+  <div id="tab-accounts" class="hidden">
+    <div class="grid gap-6 xl:grid-cols-2">
+      <section class="rounded-2xl bg-white p-5 shadow">
+        <div class="mb-4">
+          <h3 class="text-xl font-bold text-gray-900">新增老師帳號</h3>
+          <p class="mt-1 text-sm text-gray-500">老師可管理老師與學生帳號。</p>
+        </div>
+        <form class="grid gap-3 md:grid-cols-2" onsubmit="createAdminAccount(event)">
+          <input id="new-admin-username" class="rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="老師帳號" required>
+          <input id="new-admin-display-name" class="rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="老師姓名" required>
+          <input id="new-admin-password" type="password" class="rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="登入密碼" required>
+          <label class="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700">
+            <input id="new-admin-active" type="checkbox" class="accent-indigo-600" checked>
+            啟用帳號
+          </label>
+          <button class="md:col-span-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">建立老師帳號</button>
+        </form>
+        <div id="admin-accounts-list" class="mt-5 space-y-3"></div>
+      </section>
+
+      <section class="rounded-2xl bg-white p-5 shadow">
+        <div class="mb-4">
+          <h3 class="text-xl font-bold text-gray-900">新增學生帳號</h3>
+          <p class="mt-1 text-sm text-gray-500">學生帳號可設定姓名、學號、密碼與啟用狀態。</p>
+        </div>
+        <form class="grid gap-3 md:grid-cols-2" onsubmit="createStudentAccount(event)">
+          <input id="new-student-username" class="rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="學生帳號" required>
+          <input id="new-student-name" class="rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="學生姓名" required>
+          <input id="new-student-id" class="rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="學號">
+          <input id="new-student-password" type="password" class="rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="登入密碼" required>
+          <label class="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700">
+            <input id="new-student-active" type="checkbox" class="accent-sky-600" checked>
+            啟用帳號
+          </label>
+          <button class="md:col-span-2 rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700">建立學生帳號</button>
+        </form>
+        <div id="student-accounts-list" class="mt-5 space-y-3"></div>
+      </section>
+    </div>
+  </div>
+
   <!-- 成績統計 -->
   <div id="tab-stats" class="hidden">
     <div class="mb-4">
@@ -89,6 +163,65 @@ body{font-family:'Noto Sans TC',sans-serif;}
       </select>
     </div>
     <div id="stats-container"></div>
+  </div>
+
+  <div id="tab-review" class="hidden">
+    <div class="flex gap-3 mb-4 flex-wrap items-end">
+      <div>
+        <label class="block text-xs text-gray-500 mb-1">學段</label>
+        <select id="review-grade" onchange="onReviewGradeChange()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+          <option value="">全部</option>
+          <option value="elementary_6">國小六年級</option>
+          <option value="junior_high">升國中（資優班）</option>
+          <option value="grade_7">國一（七年級）</option>
+          <option value="grade_8">國二（八年級）</option>
+          <option value="grade_9">國三（九年級）</option>
+          <option value="bctest">國中教育會考</option>
+          <option value="gept_elementary">全民英檢初級</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs text-gray-500 mb-1">科目</label>
+        <select id="review-subject" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+          <option value="">全部科目</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs text-gray-500 mb-1">狀態</label>
+        <select id="review-status-filter" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+          <option value="needs_review">待審查</option>
+          <option value="approved">已核准</option>
+          <option value="all">全部</option>
+        </select>
+      </div>
+      <label class="flex items-center gap-2 text-sm text-gray-600 pb-2">
+        <input id="review-include-archived" type="checkbox" class="accent-indigo-600">
+        含封存題
+      </label>
+      <button onclick="loadReviewWorkbench()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium">載入審查工作台</button>
+      <button onclick="batchReviewAction('approve')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium">批次核准</button>
+      <button onclick="batchReviewAction('archive')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium">批次封存</button>
+      <button onclick="promptBatchDifficulty()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">批次調難度</button>
+    </div>
+    <div id="review-summary" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4"></div>
+    <div id="review-table" class="bg-white rounded-xl shadow overflow-hidden">
+      <div class="text-center py-8 text-gray-400">點擊「載入審查工作台」開始</div>
+    </div>
+    <div class="mt-6 bg-white rounded-xl shadow overflow-hidden">
+      <div class="px-4 py-3 bg-gray-50 border-b text-sm font-medium text-gray-700">審查操作歷史</div>
+      <div class="p-4 flex gap-3 flex-wrap items-end border-b">
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">動作</label>
+          <input id="review-history-action" type="text" class="border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="例如 archive">
+        </div>
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">操作者</label>
+          <input id="review-history-user" type="text" class="border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="teacher01">
+        </div>
+        <button onclick="loadReviewHistory()" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium">查詢歷史</button>
+      </div>
+      <div id="review-history-table" class="text-center py-8 text-gray-400">點擊「查詢歷史」載入</div>
+    </div>
   </div>
 
   <!-- ML 分析 -->
@@ -192,6 +325,7 @@ body{font-family:'Noto Sans TC',sans-serif;}
         <label class="block text-xs text-gray-500 mb-1">題型篩選</label>
         <select id="grading-type-filter" onchange="loadPendingGrading()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
           <option value="writing">✍️ 寫作</option>
+          <option value="speaking">🎤 口說</option>
         </select>
       </div>
       <div class="flex gap-2">
@@ -207,6 +341,45 @@ body{font-family:'Noto Sans TC',sans-serif;}
     </div>
   </div>
 </main>
+
+<div id="admin-login-modal" class="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
+    <h3 class="text-xl font-bold text-gray-800 mb-2">老師登入</h3>
+    <p class="text-sm text-gray-500 mb-5">請用老師帳號登入後再使用老師首頁功能。</p>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">帳號</label>
+        <input id="admin-login-username" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="teacher01">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">密碼</label>
+        <input id="admin-login-password" type="password" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="請輸入密碼">
+      </div>
+      <p id="admin-login-error" class="text-sm text-red-500 hidden"></p>
+    </div>
+    <div class="mt-6 flex justify-end gap-3">
+      <button onclick="loginAdmin()" class="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium">登入</button>
+    </div>
+  </div>
+</div>
+
+<div id="version-modal" class="fixed inset-0 bg-black/50 z-[55] hidden overflow-y-auto">
+  <div class="min-h-screen flex items-start justify-center py-8 px-4">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-4xl">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold text-gray-800">題目版本紀錄</h3>
+        <button onclick="closeModal('version-modal')" class="text-gray-500 hover:text-gray-800">關閉</button>
+      </div>
+      <div id="version-list" class="space-y-3 max-h-[70vh] overflow-y-auto">
+        <div class="text-center py-8 text-gray-400">載入中...</div>
+      </div>
+      <div id="version-diff-panel" class="mt-4 hidden border-t pt-4">
+        <h4 class="font-semibold text-gray-800 mb-3">版本比較</h4>
+        <div id="version-diff-content" class="space-y-2 text-sm"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- 題目新增/編輯 Modal -->
 <div id="question-modal" class="fixed inset-0 bg-black/50 z-50 hidden overflow-y-auto">
@@ -487,9 +660,105 @@ let editingExamId = null;
 let selectedQuestions = {};
 let selectedQuestionsOrder = [];
 let allExamQPool = [];
+let adminProfile = null;
+let selectedReviewIds = new Set();
+let currentVersionCompare = [];
+let accountManagementCache = null;
+let accountManagementLoading = null;
+const teacherLoginUrl = '/login.html?role=teacher&return_to=' + encodeURIComponent(location.pathname + location.search);
 
-function apiKey() {
-  return document.getElementById('api_key')?.value?.trim() || '';
+function redirectToTeacherLogin() {
+  location.replace(teacherLoginUrl);
+}
+
+async function adminFetch(url, options = {}) {
+  const opts = { credentials: 'same-origin', ...options };
+  const res = await fetch(url, opts);
+  if (res.status === 401) redirectToTeacherLogin();
+  return res;
+}
+
+function showLoginModal(message = '') {
+  document.getElementById('admin-login-modal').classList.remove('hidden');
+  const err = document.getElementById('admin-login-error');
+  if (message) {
+    err.textContent = message;
+    err.classList.remove('hidden');
+  } else {
+    err.classList.add('hidden');
+  }
+}
+
+function hideLoginModal() {
+  document.getElementById('admin-login-modal').classList.add('hidden');
+  document.getElementById('admin-login-error').classList.add('hidden');
+}
+
+function renderAdminProfile() {
+  const badge = document.getElementById('admin-user-badge');
+  if (!adminProfile) {
+    badge.classList.add('hidden');
+    badge.textContent = '';
+    return;
+  }
+  const rawName = (adminProfile.display_name || adminProfile.username || '').trim();
+  const normalizedName = ['系統管理員', 'super_admin'].includes(rawName.toLowerCase()) ? '老師' : rawName;
+  const baseName = normalizedName || '老師';
+  const displayName = baseName === '老師' ? '老師' : `${baseName} · 老師`;
+  badge.textContent = displayName;
+  badge.classList.remove('hidden');
+}
+
+async function ensureAdminSession() {
+  let res;
+  try {
+    res = await adminFetch('/api/admin/me');
+  } catch (_) {
+    redirectToTeacherLogin();
+    return false;
+  }
+  if (!res.ok) {
+    redirectToTeacherLogin();
+    return false;
+  }
+  const data = await res.json();
+  adminProfile = data.admin || null;
+  renderAdminProfile();
+  hideLoginModal();
+  return true;
+}
+
+async function loginAdmin() {
+  const username = document.getElementById('admin-login-username').value.trim();
+  const password = document.getElementById('admin-login-password').value;
+  if (!username || !password) {
+    showLoginModal('請輸入帳號與密碼');
+    return;
+  }
+  const res = await fetch('/api/admin/login', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    showLoginModal(data.error || '登入失敗');
+    return;
+  }
+  adminProfile = data.admin || null;
+  renderAdminProfile();
+  hideLoginModal();
+  await init();
+}
+
+async function logoutAdmin() {
+  try {
+    await fetch('/api/admin/logout', { method: 'POST', credentials: 'same-origin' });
+  } catch (_) {}
+  adminProfile = null;
+  renderAdminProfile();
+  location.replace('/login.html?role=teacher');
 }
 
 function uniqueQuestionIds(ids) {
@@ -513,15 +782,27 @@ function normalizeQContent(s) {
 
 // ── Init ──────────────────────────────────────────────────────────────────
 async function init() {
+  if (!(await ensureAdminSession())) return;
   // 初始化時，依預設學段（junior_high）分別載入各科目下拉
   await Promise.all([
     loadSubjectsInto('q-subject',      'junior_high'),
     loadSubjectsInto('filter-subject', 'junior_high'),
     loadSubjectsInto('eq-subject',     ''),
     loadSubjectsInto('rand-subject',   ''),
+    loadSubjectsInto('review-subject', ''),
   ]);
   loadQuestions();
   loadGradingExamList();
+  applyInitialTabFromQuery();
+}
+
+function applyInitialTabFromQuery() {
+  const tab = new URLSearchParams(location.search).get('tab');
+  const allow = new Set(['questions', 'exams', 'accounts', 'stats', 'review', 'ml', 'grading']);
+  if (!allow.has(tab) || tab === 'questions') return;
+  const btn = Array.from(document.querySelectorAll('.tab-btn'))
+    .find(item => item.getAttribute('onclick') === `switchTab('${tab}',this)`);
+  switchTab(tab, btn || null);
 }
 
 // 依學段載入科目選項到指定 select 元素
@@ -658,6 +939,11 @@ async function onRandGradeChange() {
   onRandSubjectChange();
 }
 
+async function onReviewGradeChange() {
+  const grade = document.getElementById('review-grade').value;
+  await loadSubjectsInto('review-subject', grade);
+}
+
 // 隨機抽題：科目變更 → 若為作文科目自動切換題型
 function onRandSubjectChange() {
   const sel = document.getElementById('rand-subject');
@@ -668,14 +954,284 @@ function onRandSubjectChange() {
 }
 
 // ── Tab Switching ─────────────────────────────────────────────────────────
+const TAB_NOTICES = {
+  questions: {
+    icon: '📚',
+    title: '題庫管理注意事項',
+    text: '新增或編輯題目後請記得按儲存；批次調整前建議先以篩選條件確認學段、科目與題型。',
+    pill: '題庫管理'
+  },
+  exams: {
+    icon: '📝',
+    title: '試卷管理注意事項',
+    text: '建立試卷後請確認題目順序、配分與題型是否符合考試需求，再提供給學生作答。',
+    pill: '試卷管理'
+  },
+  accounts: {
+    icon: '👥',
+    title: '帳號管理注意事項',
+    text: '帳號異動會立即生效；停用帳號前請先確認是否仍有進行中考試或待批改紀錄。',
+    pill: '帳號管理'
+  },
+  stats: {
+    icon: '📊',
+    title: '成績統計注意事項',
+    text: '請先選擇試卷再檢視統計；圖表與排名會依目前資料即時更新。',
+    pill: '成績統計'
+  },
+  review: {
+    icon: '🛡️',
+    title: '審查工作台注意事項',
+    text: '審查與封存會寫入歷史紀錄；批次操作前請先確認勾選題目與動作類型。',
+    pill: '審查工作台'
+  },
+  ml: {
+    icon: '🧠',
+    title: 'ML 分析注意事項',
+    text: '分析結果為輔助判讀；調整題目難度前建議搭配實際作答數據與教師評估。',
+    pill: 'ML 分析'
+  },
+  grading: {
+    icon: '✍️',
+    title: '作文批改注意事項',
+    text: '送出評分後成績會立即更新；請先確認配分、評語與 AI 建議是否一致。',
+    pill: '作文批改'
+  }
+};
+
+function renderTabNotice(tab) {
+  const notice = document.getElementById('admin-access-notice');
+  const icon = document.getElementById('admin-access-icon');
+  const title = document.getElementById('admin-access-title');
+  const text = document.getElementById('admin-access-text');
+  const pill = document.getElementById('admin-access-pill');
+  const data = TAB_NOTICES[tab] || TAB_NOTICES.questions;
+  if (!notice || !icon || !title || !text || !pill || !data) return;
+  notice.className = 'rounded-2xl border border-sky-200 bg-sky-50 px-5 py-4 shadow-sm';
+  icon.textContent = data.icon || 'ℹ️';
+  title.className = 'text-sm font-bold text-sky-800';
+  text.className = 'text-sm text-sky-700';
+  title.textContent = data.title;
+  text.textContent = data.text;
+  pill.className = 'inline-flex items-center justify-center rounded-full bg-sky-100 px-3 py-1 text-xs font-medium text-sky-800 ring-1 ring-sky-200';
+  pill.textContent = data.pill;
+}
+
 function switchTab(tab, btn) {
   document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
-  document.getElementById('tab-' + tab).classList.remove('hidden');
+  const targetTab = document.getElementById('tab-' + tab);
+  if (!targetTab) return;
+  targetTab.classList.remove('hidden');
   document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.classList.add('text-indigo-200'); });
-  btn.classList.add('active'); btn.classList.remove('text-indigo-200');
+  const activeBtn = btn || Array.from(document.querySelectorAll('.tab-btn')).find(item => item.getAttribute('onclick') === `switchTab('${tab}',this)`);
+  if (activeBtn) {
+    activeBtn.classList.add('active');
+    activeBtn.classList.remove('text-indigo-200');
+  }
+  renderTabNotice(tab);
   if (tab === 'exams') loadExams();
+  if (tab === 'accounts') loadAccountManagement();
   if (tab === 'stats') loadStatsExamList();
+  if (tab === 'review') { loadReviewWorkbench(); loadReviewHistory(); }
   if (tab === 'ml') switchMlTab('quality');
+}
+
+function escAttr(value) {
+  return escHtml(value).replace(/'/g, '&#39;');
+}
+
+function renderAccountManagementLoadFailed() {
+  const errorHtml = '<div class="rounded-xl border border-red-200 bg-red-50 px-4 py-6 text-center text-sm text-red-600">帳號資料載入失敗，請稍後再試</div>';
+  const adminList = document.getElementById('admin-accounts-list');
+  const studentList = document.getElementById('student-accounts-list');
+  if (adminList && !adminList.innerHTML.trim()) adminList.innerHTML = errorHtml;
+  if (studentList && !studentList.innerHTML.trim()) studentList.innerHTML = errorHtml;
+}
+
+function renderAccountManagementLoading() {
+  const loadingHtml = '<div class="rounded-xl border border-dashed border-gray-300 px-4 py-6 text-center text-sm text-gray-400">載入中...</div>';
+  const adminList = document.getElementById('admin-accounts-list');
+  const studentList = document.getElementById('student-accounts-list');
+  if (adminList && !adminList.innerHTML.trim()) adminList.innerHTML = loadingHtml;
+  if (studentList && !studentList.innerHTML.trim()) studentList.innerHTML = loadingHtml;
+}
+
+async function loadAccountManagement(options = {}) {
+  const { force = false } = options;
+  if (!force && accountManagementCache) return accountManagementCache;
+
+  if (accountManagementLoading) {
+    if (!force) return accountManagementLoading;
+    try {
+      await accountManagementLoading;
+    } catch (_) {}
+  }
+
+  if (!accountManagementCache) {
+    renderAccountManagementLoading();
+  }
+
+  accountManagementLoading = (async () => {
+    const res = await adminFetch('/api/admin/accounts');
+    if (!res.ok) {
+      renderAccountManagementLoadFailed();
+      return null;
+    }
+    const data = await res.json().catch(() => ({}));
+    accountManagementCache = {
+      admins: Array.isArray(data.admins) ? data.admins : [],
+      students: Array.isArray(data.students) ? data.students : [],
+      current_admin_id: data.current_admin_id || null
+    };
+    renderAdminAccountsTable(accountManagementCache.admins, accountManagementCache.current_admin_id);
+    renderStudentAccountsTable(accountManagementCache.students);
+    return accountManagementCache;
+  })();
+
+  try {
+    return await accountManagementLoading;
+  } finally {
+    accountManagementLoading = null;
+  }
+}
+
+function renderAdminAccountsTable(accounts, currentAdminId) {
+  const el = document.getElementById('admin-accounts-list');
+  if (!el) return;
+  if (!accounts.length) {
+    el.innerHTML = '<div class="rounded-xl border border-dashed border-gray-300 px-4 py-6 text-center text-sm text-gray-400">目前沒有老師帳號</div>';
+    return;
+  }
+  el.innerHTML = accounts.map(account => `
+    <form class="rounded-2xl border border-gray-200 p-4" onsubmit="updateAdminAccount(event, ${account.id})">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <div class="text-sm font-bold text-gray-900">${escHtml(account.display_name || account.username)}</div>
+          <div class="text-xs text-gray-500">${escHtml(account.username)}</div>
+        </div>
+        <span class="rounded-full px-3 py-1 text-xs font-semibold ${account.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-600'}">${account.is_active ? '啟用中' : '已停用'}</span>
+      </div>
+      <div class="mt-3 grid gap-3 md:grid-cols-2">
+        <input name="display_name" value="${escAttr(account.display_name || '')}" class="rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="老師姓名">
+        <input name="password" type="password" class="rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="留空表示不改密碼">
+        <label class="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700">
+          <input name="is_active" type="checkbox" class="accent-indigo-600" ${account.is_active ? 'checked' : ''} ${account.id === currentAdminId ? 'disabled' : ''}>
+          啟用帳號
+        </label>
+        <div class="flex items-center text-xs text-gray-400">${account.id === currentAdminId ? '目前登入中的老師帳號不可停用' : '可更新老師姓名與密碼'}</div>
+      </div>
+      <button class="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">更新老師帳號</button>
+    </form>
+  `).join('');
+}
+
+function renderStudentAccountsTable(accounts) {
+  const el = document.getElementById('student-accounts-list');
+  if (!el) return;
+  if (!accounts.length) {
+    el.innerHTML = '<div class="rounded-xl border border-dashed border-gray-300 px-4 py-6 text-center text-sm text-gray-400">目前沒有學生帳號</div>';
+    return;
+  }
+  el.innerHTML = accounts.map(account => `
+    <form class="rounded-2xl border border-gray-200 p-4" onsubmit="updateStudentAccount(event, ${account.id})">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <div class="text-sm font-bold text-gray-900">${escHtml(account.student_name || account.username)}</div>
+          <div class="text-xs text-gray-500">${escHtml(account.username)}${account.student_id ? ` ・ ${escHtml(account.student_id)}` : ''}</div>
+        </div>
+        <span class="rounded-full px-3 py-1 text-xs font-semibold ${account.is_active ? 'bg-sky-100 text-sky-700' : 'bg-gray-200 text-gray-600'}">${account.is_active ? '啟用中' : '已停用'}</span>
+      </div>
+      <div class="mt-3 grid gap-3 md:grid-cols-2">
+        <input name="student_name" value="${escAttr(account.student_name || '')}" class="rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="學生姓名">
+        <input name="student_id" value="${escAttr(account.student_id || '')}" class="rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="學號">
+        <input name="password" type="password" class="rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="留空表示不改密碼">
+        <label class="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700">
+          <input name="is_active" type="checkbox" class="accent-sky-600" ${account.is_active ? 'checked' : ''}>
+          啟用帳號
+        </label>
+      </div>
+      <button class="mt-3 rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700">更新學生帳號</button>
+    </form>
+  `).join('');
+}
+
+async function createAdminAccount(event) {
+  event.preventDefault();
+  const body = {
+    username: document.getElementById('new-admin-username').value.trim(),
+    display_name: document.getElementById('new-admin-display-name').value.trim(),
+    password: document.getElementById('new-admin-password').value,
+    is_active: document.getElementById('new-admin-active').checked ? 1 : 0
+  };
+  const res = await adminFetch('/api/admin/accounts/admins', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) return alert(data.error || '建立老師帳號失敗');
+  event.target.reset();
+  document.getElementById('new-admin-active').checked = true;
+  loadAccountManagement({ force: true });
+}
+
+async function updateAdminAccount(event, id) {
+  event.preventDefault();
+  const form = event.target;
+  const activeInput = form.elements.is_active;
+  const body = {
+    display_name: form.elements.display_name.value.trim(),
+    password: form.elements.password.value,
+    is_active: activeInput ? (activeInput.checked ? 1 : 0) : 1
+  };
+  const res = await adminFetch('/api/admin/accounts/admins/' + id, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) return alert(data.error || '更新老師帳號失敗');
+  loadAccountManagement({ force: true });
+}
+
+async function createStudentAccount(event) {
+  event.preventDefault();
+  const body = {
+    username: document.getElementById('new-student-username').value.trim(),
+    student_name: document.getElementById('new-student-name').value.trim(),
+    student_id: document.getElementById('new-student-id').value.trim(),
+    password: document.getElementById('new-student-password').value,
+    is_active: document.getElementById('new-student-active').checked ? 1 : 0
+  };
+  const res = await adminFetch('/api/admin/accounts/students', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) return alert(data.error || '建立學生帳號失敗');
+  event.target.reset();
+  document.getElementById('new-student-active').checked = true;
+  loadAccountManagement({ force: true });
+}
+
+async function updateStudentAccount(event, id) {
+  event.preventDefault();
+  const form = event.target;
+  const body = {
+    student_name: form.elements.student_name.value.trim(),
+    student_id: form.elements.student_id.value.trim(),
+    password: form.elements.password.value,
+    is_active: form.elements.is_active.checked ? 1 : 0
+  };
+  const res = await adminFetch('/api/admin/accounts/students/' + id, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) return alert(data.error || '更新學生帳號失敗');
+  loadAccountManagement({ force: true });
 }
 
 function switchMlTab(tab) {
@@ -698,13 +1254,221 @@ function mlStat(label, value, sub, color='text-indigo-600') {
   </div>`;
 }
 
+async function loadReviewWorkbench() {
+  const grade = document.getElementById('review-grade').value;
+  const subject = document.getElementById('review-subject').value;
+  const reviewStatus = document.getElementById('review-status-filter').value;
+  const includeArchived = document.getElementById('review-include-archived').checked;
+  const params = new URLSearchParams();
+  if (grade) params.set('grade_level', grade);
+  if (subject) params.set('subject_id', subject);
+  if (reviewStatus) params.set('review_status', reviewStatus);
+  if (includeArchived) params.set('include_archived', '1');
+  const res = await adminFetch('/api/question-review-queue?' + params);
+  const rows = await res.json();
+  if (!res.ok) {
+    document.getElementById('review-table').innerHTML = `<div class="text-center py-8 text-red-500">${escHtml(rows.error || '載入失敗')}</div>`;
+    return;
+  }
+  const avgQuality = rows.length ? Math.round(rows.reduce((s, r) => s + (r.quality_score || 0), 0) / rows.length) : 0;
+  document.getElementById('review-summary').innerHTML = [
+    mlStat('題數', rows.length),
+    mlStat('平均品質分', avgQuality),
+    mlStat('已選題數', selectedReviewIds.size),
+    mlStat('旗標總數', rows.reduce((s, r) => s + ((r.quality_flags || []).length), 0))
+  ].join('');
+  document.getElementById('review-table').innerHTML = `
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
+          <tr>
+            <th class="px-3 py-2 text-left"><input type="checkbox" onchange="toggleAllReviewRows(this.checked)" class="accent-indigo-600"></th>
+            <th class="px-3 py-2 text-left">ID</th>
+            <th class="px-3 py-2 text-left">科目</th>
+            <th class="px-3 py-2">難度</th>
+            <th class="px-3 py-2">品質分</th>
+            <th class="px-3 py-2 text-left">旗標</th>
+            <th class="px-3 py-2 text-left">題目</th>
+            <th class="px-3 py-2 text-left">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(r => `
+            <tr class="border-b border-gray-100 hover:bg-gray-50">
+              <td class="px-3 py-2"><input type="checkbox" ${selectedReviewIds.has(r.id) ? 'checked' : ''} onchange="toggleReviewRow(${r.id}, this.checked)" class="accent-indigo-600"></td>
+              <td class="px-3 py-2 text-gray-500">#${r.id}</td>
+              <td class="px-3 py-2">${escHtml(r.subject_name || '')}</td>
+              <td class="px-3 py-2 text-center">${diffLabel5[r.difficulty] || r.difficulty}</td>
+              <td class="px-3 py-2 text-center">${r.quality_score ?? '—'}</td>
+              <td class="px-3 py-2 text-xs text-red-600">${(r.quality_flags || []).join(' / ') || '—'}</td>
+              <td class="px-3 py-2 text-xs text-gray-700 max-w-md truncate">${escHtml(r.content || '')}</td>
+              <td class="px-3 py-2 text-xs">
+                <div class="flex gap-1 flex-wrap">
+                  <button onclick="reviewQuestion(${r.id}, 'approve')" class="px-2 py-1 rounded bg-green-50 text-green-700 hover:bg-green-100">核准</button>
+                  <button onclick="reviewQuestion(${r.id}, 'adjust_difficulty', ${r.difficulty})" class="px-2 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100">調難度</button>
+                  <button onclick="reviewQuestion(${r.id}, 'archive')" class="px-2 py-1 rounded bg-red-50 text-red-700 hover:bg-red-100">封存</button>
+                  <button onclick="openVersionModal(${r.id})" class="px-2 py-1 rounded bg-gray-100 text-gray-700 hover:bg-gray-200">版本</button>
+                </div>
+              </td>
+            </tr>
+          `).join('') || '<tr><td colspan="8" class="text-center py-8 text-gray-400">沒有資料</td></tr>'}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function toggleReviewRow(id, checked) { if (checked) selectedReviewIds.add(id); else selectedReviewIds.delete(id); }
+function toggleAllReviewRows(checked) {
+  document.querySelectorAll('#review-table tbody input[type="checkbox"]').forEach((el) => {
+    el.checked = checked;
+    const match = (el.getAttribute('onchange') || '').match(/toggleReviewRow\((\d+)/);
+    if (!match) return;
+    const id = parseInt(match[1], 10);
+    if (checked) selectedReviewIds.add(id); else selectedReviewIds.delete(id);
+  });
+}
+
+async function batchReviewAction(action) {
+  const questionIds = Array.from(selectedReviewIds);
+  if (!questionIds.length) { alert('請先勾選題目'); return; }
+  const res = await adminFetch('/api/questions/review-actions/batch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question_ids: questionIds, action })
+  });
+  const data = await res.json();
+  if (!res.ok) { alert(data.error || '批次操作失敗'); return; }
+  selectedReviewIds = new Set();
+  alert(`完成 ${data.success_count} 題`);
+  loadReviewWorkbench();
+}
+
+async function promptBatchDifficulty() {
+  const questionIds = Array.from(selectedReviewIds);
+  if (!questionIds.length) { alert('請先勾選題目'); return; }
+  const value = prompt('請輸入要批次調整的難度（1-5）');
+  if (value == null) return;
+  const difficulty = parseInt(value, 10);
+  if (!Number.isInteger(difficulty) || difficulty < 1 || difficulty > 5) { alert('難度必須是 1 到 5'); return; }
+  const res = await adminFetch('/api/questions/review-actions/batch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question_ids: questionIds, action: 'adjust_difficulty', difficulty })
+  });
+  const data = await res.json();
+  if (!res.ok) { alert(data.error || '批次調整失敗'); return; }
+  selectedReviewIds = new Set();
+  alert(`完成 ${data.success_count} 題`);
+  loadReviewWorkbench();
+}
+
+async function loadReviewHistory() {
+  const action = document.getElementById('review-history-action').value.trim();
+  const changedBy = document.getElementById('review-history-user').value.trim();
+  const params = new URLSearchParams();
+  if (action) params.set('action', action);
+  if (changedBy) params.set('changed_by', changedBy);
+  const res = await adminFetch('/api/question-review-history?' + params);
+  const rows = await res.json();
+  if (!res.ok) {
+    document.getElementById('review-history-table').innerHTML = `<div class="text-center py-8 text-red-500">${escHtml(rows.error || '載入失敗')}</div>`;
+    return;
+  }
+  document.getElementById('review-history-table').innerHTML = rows.length ? `
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
+          <tr><th class="px-3 py-2 text-left">題號</th><th class="px-3 py-2 text-left">科目</th><th class="px-3 py-2 text-left">動作</th><th class="px-3 py-2 text-left">操作者</th><th class="px-3 py-2 text-left">時間</th></tr>
+        </thead>
+        <tbody>${rows.map(r => `<tr class="border-b border-gray-100"><td class="px-3 py-2">#${r.question_id}</td><td class="px-3 py-2">${escHtml(r.subject_name || '')}</td><td class="px-3 py-2">${escHtml(r.action || '')}</td><td class="px-3 py-2">${escHtml(r.changed_by || '')}</td><td class="px-3 py-2 text-xs text-gray-500">${escHtml(r.created_at || '')}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>` : '<div class="text-center py-8 text-gray-400">查無資料</div>';
+}
+
+async function openVersionModal(questionId) {
+  document.getElementById('version-modal').classList.remove('hidden');
+  document.getElementById('version-list').innerHTML = '<div class="text-center py-8 text-gray-400">載入中...</div>';
+  document.getElementById('version-diff-panel').classList.add('hidden');
+  currentVersionCompare = [];
+  const res = await adminFetch(`/api/questions/${questionId}/versions`);
+  const rows = await res.json();
+  if (!res.ok) { document.getElementById('version-list').innerHTML = `<div class="text-center py-8 text-red-500">${escHtml(rows.error || '載入失敗')}</div>`; return; }
+  document.getElementById('version-list').innerHTML = rows.map(v => `
+    <div class="border border-gray-200 rounded-xl p-4">
+      <div class="flex items-center justify-between gap-3 mb-2">
+        <div><div class="font-semibold text-gray-800">版本 ${v.version_no} · ${escHtml(v.action)}</div><div class="text-xs text-gray-500">${escHtml(v.changed_by || 'system')} · ${escHtml(v.created_at || '')}</div></div>
+        <div class="flex gap-2">
+          <button onclick="toggleCompareVersion(${questionId}, ${v.id})" class="px-3 py-1.5 rounded bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs">加入比較</button>
+          <button onclick="restoreQuestionVersion(${questionId}, ${v.id})" class="px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs">回復此版本</button>
+        </div>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-3 text-xs text-gray-700">${escHtml(v.snapshot?.content || '')}</div>
+    </div>`).join('');
+}
+
+async function toggleCompareVersion(questionId, versionId) {
+  if (currentVersionCompare.includes(versionId)) currentVersionCompare = currentVersionCompare.filter(id => id !== versionId);
+  else { if (currentVersionCompare.length >= 2) currentVersionCompare.shift(); currentVersionCompare.push(versionId); }
+  document.getElementById('version-diff-panel').classList.remove('hidden');
+  if (currentVersionCompare.length < 2) {
+    document.getElementById('version-diff-content').innerHTML = '<div class="text-gray-500 text-sm">請再選擇另一個版本進行比較</div>';
+    return;
+  }
+  const [fromVersionId, toVersionId] = currentVersionCompare;
+  const res = await adminFetch(`/api/questions/${questionId}/version-diff?from_version_id=${fromVersionId}&to_version_id=${toVersionId}`);
+  const data = await res.json();
+  if (!res.ok) { document.getElementById('version-diff-content').innerHTML = `<div class="text-red-500 text-sm">${escHtml(data.error || '比較失敗')}</div>`; return; }
+  document.getElementById('version-diff-content').innerHTML = data.changes.map(change => `
+    <div class="border border-gray-200 rounded-lg p-3">
+      <div class="font-medium text-gray-800 mb-1">${escHtml(change.field)}</div>
+      <div class="grid md:grid-cols-2 gap-3 text-xs">
+        <div class="bg-red-50 rounded p-2"><div class="text-red-600 font-medium mb-1">舊值</div><div class="text-gray-700 whitespace-pre-wrap break-all">${renderDiffSide(change.from, change.to, 'from')}</div></div>
+        <div class="bg-green-50 rounded p-2"><div class="text-green-600 font-medium mb-1">新值</div><div class="text-gray-700 whitespace-pre-wrap break-all">${renderDiffSide(change.from, change.to, 'to')}</div></div>
+      </div>
+    </div>`).join('');
+}
+
+function formatDiffValue(value) { if (value == null || value === '') return '（空值）'; return typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value); }
+function renderDiffSide(fromValue, toValue, side) {
+  const a = formatDiffValue(fromValue);
+  const b = formatDiffValue(toValue);
+  if (a.length > 120 || b.length > 120 || a.includes('\n') || b.includes('\n')) return highlightTextDiff(a, b, side);
+  return escHtml(side === 'from' ? a : b);
+}
+function highlightTextDiff(fromText, toText, side) {
+  const oldTokens = String(fromText).split(/(\s+)/);
+  const newTokens = String(toText).split(/(\s+)/);
+  const maxLen = Math.max(oldTokens.length, newTokens.length);
+  const parts = [];
+  for (let i = 0; i < maxLen; i++) {
+    const oldTok = oldTokens[i] ?? '';
+    const newTok = newTokens[i] ?? '';
+    if (oldTok === newTok) parts.push(escHtml(side === 'from' ? oldTok : newTok));
+    else {
+      if (side === 'from' && oldTok) parts.push(`<mark class="bg-red-200 px-0.5 rounded">${escHtml(oldTok)}</mark>`);
+      if (side === 'to' && newTok) parts.push(`<mark class="bg-green-200 px-0.5 rounded">${escHtml(newTok)}</mark>`);
+    }
+  }
+  return parts.join('');
+}
+
+async function restoreQuestionVersion(questionId, versionId) {
+  if (!confirm('確定要回復到這個版本嗎？')) return;
+  const res = await adminFetch(`/api/questions/${questionId}/restore-version`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ version_id: versionId }) });
+  const data = await res.json();
+  if (!res.ok) { alert(data.error || '回復失敗'); return; }
+  alert('版本已回復');
+  openVersionModal(questionId);
+  loadQuestions(currentPage);
+}
+
 async function loadQualityReport() {
   const min = document.getElementById('ml-min-attempts').value || 3;
   const grade = document.getElementById('ml-grade').value;
   const reviewOnly = document.getElementById('ml-needs-review-only').checked;
   const params = new URLSearchParams({ min_attempts: min });
   if (grade) params.set('grade_level', grade);
-  const r = await fetch('/api/analytics/question-quality?' + params, { headers: { 'x-api-key': document.getElementById('api_key')?.value || '' } });
+  const r = await adminFetch('/api/analytics/question-quality?' + params);
   const data = await r.json();
   if (!r.ok) { document.getElementById('ml-quality-table').innerHTML = `<div class="text-center py-8 text-red-500">${escHtml(data.error)}</div>`; return; }
 
@@ -759,7 +1523,7 @@ async function loadCalibration() {
   const anomalousOnly = document.getElementById('cal-anomalous-only').checked;
   const params = new URLSearchParams();
   if (grade) params.set('grade_level', grade);
-  const r = await fetch('/api/analytics/difficulty-calibration?' + params, { headers: { 'x-api-key': document.getElementById('api_key')?.value || '' } });
+  const r = await adminFetch('/api/analytics/difficulty-calibration?' + params);
   const data = await r.json();
   if (!r.ok) { document.getElementById('cal-table').innerHTML = `<div class="text-center py-8 text-red-500">${escHtml(data.error)}</div>`; return; }
 
@@ -812,7 +1576,7 @@ async function loadStudentAbility() {
   const params = new URLSearchParams();
   if (name) params.set('student_name', name);
   if (sid)  params.set('student_id', sid);
-  const r = await fetch('/api/analytics/student-ability?' + params, { headers: { 'x-api-key': document.getElementById('api_key')?.value || '' } });
+  const r = await adminFetch('/api/analytics/student-ability?' + params);
   const data = await r.json();
   const el = document.getElementById('ability-result');
   if (!r.ok) { el.innerHTML = `<div class="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600">${escHtml(data.error)}</div>`; return; }
@@ -870,7 +1634,7 @@ function setGradingStatus(s) {
 async function loadGradingExamList() {
   const sel = document.getElementById('grading-exam-select');
   if (!sel) return;
-  const res = await fetch('/api/exams', { headers: { 'x-api-key': apiKey() } });
+  const res = await adminFetch('/api/exams');
   if (!res.ok) return;
   const exams = await res.json();
   const essayExams = exams.filter(e => e.writing_count > 0);
@@ -886,7 +1650,7 @@ async function loadPendingGrading() {
   el.innerHTML = '<div class="text-center py-8 text-gray-400">載入中...</div>';
   const params = new URLSearchParams({ status: gradingStatus });
   if (type) params.set('type', type);
-  const res = await fetch(`/api/exams/${examId}/pending-grading?` + params, { headers: { 'x-api-key': apiKey() } });
+  const res = await adminFetch(`/api/exams/${examId}/pending-grading?` + params);
   if (!res.ok) { el.innerHTML = '<div class="text-center py-8 text-red-400">載入失敗</div>'; return; }
   const rows = await res.json();
   const isGradedView = gradingStatus === 'graded';
@@ -902,14 +1666,14 @@ async function loadPendingGrading() {
       const audioHtml = r.audio_answer_url
         ? `<div class="mt-2"><audio controls class="w-full" src="${escHtml(r.audio_answer_url)}"></audio></div>`
         : '';
-      // AI 建議區塊（若已有 ai_score 則展開顯示）
-      const aiDimHtml = r.ai_score != null ? `
+      // AI 建議區塊（永遠渲染四維度格子，初次批改前顯示 —，避免 aiGrade() 找不到 .grid 元素）
+      const aiDimHtml = `
         <div class="grid grid-cols-4 gap-2 mt-2 text-xs text-center">
           <div class="bg-white rounded border px-2 py-1"><div class="text-gray-500">內容主題</div><div class="font-bold text-indigo-700">${r.dim_content ?? '—'}<span class="font-normal text-gray-400">/40</span></div></div>
           <div class="bg-white rounded border px-2 py-1"><div class="text-gray-500">結構邏輯</div><div class="font-bold text-indigo-700">${r.dim_structure ?? '—'}<span class="font-normal text-gray-400">/25</span></div></div>
           <div class="bg-white rounded border px-2 py-1"><div class="text-gray-500">語言表達</div><div class="font-bold text-indigo-700">${r.dim_language ?? '—'}<span class="font-normal text-gray-400">/25</span></div></div>
           <div class="bg-white rounded border px-2 py-1"><div class="text-gray-500">書寫規範</div><div class="font-bold text-indigo-700">${r.dim_norms ?? '—'}<span class="font-normal text-gray-400">/10</span></div></div>
-        </div>` : '';
+        </div>`;
       const aiHtml = `
         <div id="ai-suggestion-${r.id}" class="${r.ai_score != null ? '' : 'hidden'} mt-3 bg-yellow-50 border border-yellow-300 rounded-lg p-3 text-sm"
           data-ai-score="${r.ai_score ?? ''}" data-ai-notes="${escHtml(r.ai_notes || '')}"
@@ -1076,9 +1840,9 @@ async function submitGrade(detailId, maxScore) {
   const dimStructure = parseInt(document.getElementById(`dim-structure-${detailId}`)?.value) || null;
   const dimLanguage  = parseInt(document.getElementById(`dim-language-${detailId}`)?.value)  || null;
   const dimNorms     = parseInt(document.getElementById(`dim-norms-${detailId}`)?.value)     || null;
-  const res = await fetch(`/api/answer-details/${detailId}/grade`, {
+  const res = await adminFetch(`/api/answer-details/${detailId}/grade`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ rubric_score: score, reviewer_notes: notesEl.value.trim() || null,
       dim_content: dimContent, dim_structure: dimStructure, dim_language: dimLanguage, dim_norms: dimNorms })
   });
@@ -1097,9 +1861,9 @@ async function aiGrade(detailId, maxScore) {
   const providerEl = document.getElementById(`ai-provider-${detailId}`);
   const provider = providerEl ? providerEl.value : 'gemini';
   btn.disabled = true; btn.textContent = '🤖 AI 批改中...';
-  const res = await fetch(`/api/answer-details/${detailId}/ai-grade`, {
+  const res = await adminFetch(`/api/answer-details/${detailId}/ai-grade`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ provider })
   });
   const j = await res.json();
@@ -1158,10 +1922,10 @@ async function genModelEssay(questionId, detailId) {
   const providerEl = document.getElementById(`ai-provider-${detailId}`);
   const provider = providerEl ? providerEl.value : 'gemini';
   btn.disabled = true; btn.textContent = '📝 產生中...';
-  const res = await fetch(`/api/questions/${questionId}/model-essay`, {
+  const res = await adminFetch(`/api/questions/${questionId}/model-essay`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey() },
-    body: JSON.stringify({ provider })
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ provider, detailId })
   });
   const j = await res.json();
   btn.disabled = false; btn.textContent = '📝 重新產生範文';
@@ -1289,7 +2053,7 @@ async function uploadImage(input) {
   const fd = new FormData();
   fd.append('image', file);
   try {
-    const r = await fetch('/api/image/upload', { method: 'POST', headers: { 'x-api-key': apiKey() }, body: fd });
+    const r = await adminFetch('/api/image/upload', { method: 'POST', body: fd });
     const j = await r.json();
     if (j.image_url) {
       document.getElementById('q-image-url').value = j.image_url;
@@ -1358,9 +2122,9 @@ async function generateQuestionDraft() {
   btn.classList.add('opacity-60', 'cursor-not-allowed');
   statusEl.textContent = 'AI 填寫中...';
   try {
-    const res = await fetch('/api/generate/questions', {
+    const res = await adminFetch('/api/generate/questions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey() },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         provider: document.getElementById('q-ai-provider').value,
         subject_id: body.subject_id,
@@ -1426,7 +2190,7 @@ async function saveQuestion() {
   if (['writing','speaking'].includes(body.type) && !body.answer) body.answer = '人工批改';
   const url    = editingQuestionId ? '/api/questions/' + editingQuestionId : '/api/questions';
   const method = editingQuestionId ? 'PUT' : 'POST';
-  const r = await fetch(url, { method, headers: {'Content-Type':'application/json','x-api-key':apiKey()}, body: JSON.stringify(body) });
+  const r = await adminFetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
   if (!r.ok) { const j = await r.json(); alert('儲存失敗：' + (j.error||'未知')); return; }
   closeModal('question-modal');
   loadQuestions(currentPage);
@@ -1457,8 +2221,10 @@ async function loadExams() {
         </div>
       </div>
       <div class="flex gap-2">
-        <a href="/results.html?exam_id=${e.id}" class="text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 px-3 py-1.5 rounded transition-colors">成績</a>
+        <button onclick="goToStats(${e.id})" class="text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 px-3 py-1.5 rounded transition-colors">成績</button>
         <button onclick="editExam(${e.id})" class="text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded transition-colors">編輯</button>
+        <button onclick="cloneExam(${e.id})" class="text-xs bg-green-50 text-green-600 hover:bg-green-100 px-3 py-1.5 rounded transition-colors">複製</button>
+        <button onclick="batchAiGrade(${e.id})" class="text-xs bg-yellow-50 text-yellow-600 hover:bg-yellow-100 px-3 py-1.5 rounded transition-colors">AI批改</button>
         <button onclick="deleteExam(${e.id})" class="text-xs bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded transition-colors">刪除</button>
       </div>
     </div>
@@ -1496,6 +2262,37 @@ async function deleteExam(id) {
   if (!confirm('確定刪除此試卷？')) return;
   await fetch('/api/exams/' + id, { method: 'DELETE' });
   loadExams();
+}
+
+async function cloneExam(id) {
+  if (!confirm('確定要複製此試卷？將建立一份草稿副本。')) return;
+  const res = await adminFetch(`/api/exams/${id}/clone`, { method: 'POST' });
+  const data = await res.json();
+  if (data.id) {
+    alert(`試卷已複製！新試卷 ID：${data.id}（${data.title}）`);
+    loadExams();
+  } else {
+    alert('複製失敗：' + (data.error || '未知錯誤'));
+  }
+}
+
+async function batchAiGrade(id) {
+  if (!confirm('確定要對此試卷所有寫作 / 口說題進行 AI 批改？') ) return;
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '批改中…';
+  try {
+    const res = await adminFetch(`/api/exams/${id}/batch-ai-grade`, { method: 'POST' });
+    const data = await res.json();
+    if (data.graded != null) {
+      alert(`AI 批改完成！共批改 ${data.graded} 筆答案。`);
+    } else {
+      alert('批改失敗：' + (data.error || '未知錯誤'));
+    }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'AI批改';
+  }
 }
 
 async function loadExamQuestions() {
@@ -1631,6 +2428,15 @@ async function loadStatsExamList() {
   sel.innerHTML = '<option value="">選擇試卷</option>' + exams.map(e => `<option value="${e.id}">${e.title}</option>`).join('');
 }
 
+async function goToStats(examId) {
+  const btn = document.querySelector('.tab-btn[onclick*="stats"]');
+  switchTab('stats', btn);
+  await loadStatsExamList();
+  const sel = document.getElementById('stats-exam-select');
+  sel.value = examId;
+  await loadStats();
+}
+
 async function loadStats() {
   const id = document.getElementById('stats-exam-select').value;
   if (!id) return;
@@ -1679,7 +2485,13 @@ async function loadStats() {
 function escHtml(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
+window.addEventListener('pageshow', () => {
+  ensureAdminSession();
+});
+
 init();
 </script>
 </body>
 </html>
+
+
